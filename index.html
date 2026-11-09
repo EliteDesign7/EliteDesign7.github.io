@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Elite Design</title><link rel="icon" href="images/favicon.png">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0344;--surface:#120a58;--text:#f2f3fb;--muted:#a9abd0;--gold:#ff4d0a}
+*{box-sizing:border-box;margin:0}
+body{background:var(--bg);color:var(--text);font:16px/1.6 Manrope,system-ui,sans-serif}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 5vw;position:sticky;top:0;background:rgba(10,3,68,.92);backdrop-filter:blur(8px);z-index:5}
+.brand{display:flex;align-items:center;gap:10px;font:800 1.2rem Syne,sans-serif;text-decoration:none}
+.brand img{height:44px;width:44px;border-radius:50%}
+nav a{margin-left:20px;text-decoration:none;color:var(--muted)}nav a:hover{color:var(--gold)}
+.hero{aspect-ratio:16/9;max-height:88vh;width:100%;background:var(--surface) center/cover no-repeat;display:flex;align-items:flex-end;padding:0 5vw 6vh}.hero.cv .in{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hero.has-img{background-blend-mode:multiply}
+.hero h1{font:800 clamp(2.6rem,9vw,6.5rem)/1 Syne,sans-serif;letter-spacing:-.02em}
+.hero p{max-width:34ch;color:var(--muted);margin-top:14px;font-size:1.1rem}
+.hero .in{text-shadow:0 2px 18px rgba(0,0,0,.6)}
+section{padding:8vh 5vw}
+h2{font:800 2rem Syne,sans-serif;margin-bottom:22px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.tabs button{background:none;border:1px solid #2a2178;color:var(--muted);padding:6px 16px;border-radius:99px;cursor:pointer;font:inherit}
+.tabs button.on{border-color:var(--gold);color:var(--gold)}
+.grid{columns:3 260px;column-gap:16px}
+.item{break-inside:avoid;margin-bottom:16px;cursor:zoom-in;position:relative;border-radius:10px;overflow:hidden;background:var(--surface)}
+.item img{width:100%;display:block}
+.item span{position:absolute;left:0;right:0;bottom:0;padding:24px 12px 10px;background:linear-gradient(transparent,rgba(0,0,0,.75));font-weight:600;opacity:0;transition:opacity .2s}
+.item:hover span,.item:focus span{opacity:1}
+.empty{color:var(--muted)}
+#about p{max-width:60ch;color:var(--muted)}
+.links{display:flex;gap:12px;flex-wrap:wrap;margin-top:20px}
+.links a{background:var(--gold);color:#fff;padding:10px 20px;border-radius:8px;text-decoration:none;font-weight:600}
+footer{padding:28px 5vw;color:var(--muted);border-top:1px solid #2a2178;font-size:.9rem}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;z-index:20;cursor:zoom-out;padding:4vw}
+#lb.on{display:flex}#lb img{max-width:100%;max-height:100%;border-radius:8px}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+</style></head><body>
+<header><a class="brand" href="#"><img id="logo" alt="" hidden><span id="nm">Elite Design</span></a>
+<nav><a href="#work">Kaj</a><a href="#about">Amar somporke</a><a href="#contact">Jogajog</a></nav></header>
+<div class="hero" id="hero"><div class="in"><h1 id="h1">Elite Design</h1><p id="tag"></p></div></div>
+<section id="work"><h2>Amar kaj</h2><div class="tabs" id="tabs"></div><div class="grid" id="grid"></div></section>
+<section id="about"><h2>Amar somporke</h2><p id="ab"></p></section>
+<section id="contact"><h2>Jogajog</h2><div class="links" id="links"></div></section>
+<footer>© <span id="yr"></span> <span id="ft">Elite Design</span></footer>
+<div id="lb"><img alt=""></div>
+<script>
+const $=id=>document.getElementById(id);
+let data={settings:{},designs:[]},cat="Shob";
+function esc(s){return String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function render(){
+ const s=data.settings;
+ document.title=s.name||"Elite Design";
+ $("nm").textContent=$("h1").textContent=$("ft").textContent=s.name||"Elite Design";
+ $("tag").textContent=s.tagline||"";$("ab").textContent=s.about||"";$("yr").textContent=new Date().getFullYear();
+ if(s.logo){$("logo").src=s.logo;$("logo").hidden=false}
+ if(s.cover){$("hero").style.backgroundImage="url('"+s.cover+"')";$("hero").classList.add("cv")}
+ const L=[];
+ if(s.email)L.push(`<a href="mailto:${esc(s.email)}">Email</a>`);
+ if(s.facebook)L.push(`<a href="${esc(s.facebook)}" target="_blank" rel="noopener">Facebook</a>`);
+ if(s.whatsapp)L.push(`<a href="https://wa.me/${esc(s.whatsapp.replace(/\D/g,''))}" target="_blank" rel="noopener">WhatsApp</a>`);
+ $("links").innerHTML=L.join("")||'<span class="empty">Jogajog-er tothyo admin theke add koro.</span>';
+ const cats=["Shob",...new Set(data.designs.map(d=>d.category).filter(Boolean))];
+ $("tabs").innerHTML=cats.length>2?cats.map(c=>`<button class="${c===cat?'on':''}" data-c="${esc(c)}">${esc(c)}</button>`).join(""):"";
+ const list=data.designs.filter(d=>cat==="Shob"||d.category===cat);
+ $("grid").innerHTML=list.length?list.map(d=>`<div class="item" tabindex="0" data-i="${esc(d.image)}"><img loading="lazy" src="${esc(d.image)}" alt="${esc(d.title)}"><span>${esc(d.title)}</span></div>`).join(""):'<p class="empty">Ekhono kono design upload kora hoyni.</p>';
+}
+$("tabs").onclick=e=>{if(e.target.dataset.c){cat=e.target.dataset.c;render()}};
+$("grid").onclick=e=>{const i=e.target.closest(".item");if(i){$("lb").querySelector("img").src=i.dataset.i;$("lb").classList.add("on")}};
+$("lb").onclick=()=>$("lb").classList.remove("on");
+fetch("data/site.json?v="+Date.now()).then(r=>r.json()).then(d=>{data=d}).catch(()=>{}).finally(render);
+</script></body></html>

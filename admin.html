@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="bn"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex"><title>Admin - Elite Design</title>
+<style>
+:root{--bg:#0a0344;--surface:#120a58;--text:#f2f3fb;--muted:#a9abd0;--gold:#ff4d0a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,sans-serif;padding:20px;max-width:900px;margin:auto}
+h1,h2{margin:0 0 12px}h2{font-size:1.15rem;color:var(--gold)}
+.box{background:var(--surface);border-radius:12px;padding:18px;margin-bottom:18px}
+label{display:block;font-size:.85rem;color:var(--muted);margin:10px 0 4px}
+input,textarea,select{width:100%;padding:10px;border-radius:8px;border:1px solid #2a2178;background:#07022e;color:var(--text);font:inherit}
+button{background:var(--gold);color:#101826;border:0;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;margin-top:12px}
+button.del{background:#8b2f2f;color:#fff;margin:0;padding:6px 12px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}@media(max-width:600px){.row{grid-template-columns:1fr}}
+.list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-top:12px}
+.list div{background:#07022e;border-radius:8px;padding:8px;font-size:.85rem}.list img{width:100%;height:110px;object-fit:cover;border-radius:6px;margin-bottom:6px}
+#msg{position:sticky;top:8px;padding:10px 14px;border-radius:8px;background:#1f5d3a;display:none;z-index:9}#msg.err{background:#8b2f2f}
+small{color:var(--muted)}
+</style></head><body>
+<h1>Elite Design - Admin</h1><div id="msg"></div>
+<div class="box" id="login"><h2>Login</h2>
+<small>Ei tothyo shudhu tomar browser-e save thake.</small>
+<div class="row"><div><label>GitHub username</label><input id="u"></div><div><label>Repository nam (username.github.io)</label><input id="r"></div></div>
+<label>GitHub token</label><input id="t" type="password"><button onclick="login()">Login</button></div>
+<div id="panel" hidden>
+<div class="box"><h2>Notun design upload</h2>
+<div class="row"><div><label>Design-er nam</label><input id="dt"></div><div><label>Category (jemon Logo, Banner, Poster)</label><input id="dc" list="cl"><datalist id="cl"></datalist></div></div>
+<label>Image (ekshathe onek select kora jay)</label><input id="df" type="file" accept="image/*" multiple>
+<button onclick="addDesigns()">Upload koro</button></div>
+<div class="box"><h2>Upload kora design</h2><div class="list" id="list"></div></div>
+<div class="box"><h2>Logo ar Cover</h2>
+<div class="row"><div><label>Logo</label><input id="lf" type="file" accept="image/*"></div><div><label>Cover</label><input id="cf" type="file" accept="image/*"></div></div>
+<button onclick="setImg()">Logo / Cover save koro</button></div>
+<div class="box"><h2>Website-er tothyo</h2>
+<div class="row"><div><label>Website-er nam</label><input id="sn"></div><div><label>Tagline</label><input id="st"></div></div>
+<label>Amar somporke</label><textarea id="sa" rows="4"></textarea>
+<div class="row"><div><label>Email</label><input id="se"></div><div><label>WhatsApp number (country code shoho)</label><input id="sw"></div></div>
+<label>Facebook page link</label><input id="sf"><button onclick="saveSettings()">Save koro</button></div>
+<button onclick="logout()" style="background:#2a2178;color:#fff">Logout</button></div>
+<script>
+const $=id=>document.getElementById(id);
+let cfg=JSON.parse(localStorage.getItem("ed_cfg")||"null"),data;
+function msg(t,e){const m=$("msg");m.textContent=t;m.className=e?"err":"";m.style.display="block";if(!e)setTimeout(()=>m.style.display="none",3500)}
+const api=p=>`https://api.github.com/repos/${cfg.u}/${cfg.r}/contents/${p}`;
+const H=()=>({Authorization:"Bearer "+cfg.t,Accept:"application/vnd.github+json"});
+async function gh(p,method,body){const r=await fetch(api(p),{method,headers:H(),body:body&&JSON.stringify(body)});if(!r.ok&&!(method==="GET"&&r.status===404))throw new Error((await r.json()).message||r.status);return r.status===404?null:r.json()}
+const b64=s=>btoa(unescape(encodeURIComponent(s)));
+async function loadData(){const f=await gh("data/site.json","GET");if(!f){data={settings:{},designs:[]};data.sha=null;return}
+ data=JSON.parse(decodeURIComponent(escape(atob(f.content.replace(/\n/g,"")))));data.sha=f.sha}
+async function saveData(m){const{sha,...d}=data;const r=await gh("data/site.json","PUT",{message:m,content:b64(JSON.stringify(d,null,1)),...(sha?{sha}:{})});data.sha=r.content.sha}
+function shrink(file,max=1600){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/i.width),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.88).split(",")[1])};i.onerror=rej;i.src=URL.createObjectURL(file)})}
+async function putImg(file,name,max){const content=await shrink(file,max);const path=`images/${name}-${Date.now()}.jpg`;await gh(path,"PUT",{message:"Add "+path,content});return path}
+async function login(){cfg={u:$("u").value.trim(),r:$("r").value.trim(),t:$("t").value.trim()};try{await loadData();localStorage.setItem("ed_cfg",JSON.stringify(cfg));show()}catch(e){msg("Login hoyni: "+e.message,1)}}
+function logout(){localStorage.removeItem("ed_cfg");location.reload()}
+function show(){$("login").hidden=true;$("panel").hidden=false;const s=data.settings;
+ $("sn").value=s.name||"";$("st").value=s.tagline||"";$("sa").value=s.about||"";$("se").value=s.email||"";$("sw").value=s.whatsapp||"";$("sf").value=s.facebook||"";draw()}
+function draw(){$("cl").innerHTML=[...new Set(data.designs.map(d=>d.category).filter(Boolean))].map(c=>`<option value="${c}">`).join("");
+ $("list").innerHTML=data.designs.map(d=>`<div><img src="${d.image}"><b>${d.title}</b><br><small>${d.category||""}</small><br><button class="del" onclick="delD('${d.id}')">Delete</button></div>`).join("")||"<small>Ekhono kichu nai.</small>"}
+async function addDesigns(){const fs=[...$("df").files];if(!fs.length)return msg("Age image select koro",1);
+ try{msg("Upload hocche...");for(const f of fs){const image=await putImg(f,"design",1600);
+  data.designs.unshift({id:"d"+Date.now()+Math.random().toString(36).slice(2,5),title:$("dt").value||f.name.replace(/\.[^.]+$/,""),category:$("dc").value.trim(),image})}
+  await saveData("Add designs");$("df").value="";$("dt").value="";draw();msg("Upload hoye gese. Live hote 1-2 minute lagbe.")}catch(e){msg(e.message,1)}}
+async function delD(id){if(!confirm("Delete korbe?"))return;try{data.designs=data.designs.filter(d=>d.id!==id);await saveData("Delete design");draw();msg("Delete hoyeche")}catch(e){msg(e.message,1)}}
+async function setImg(){try{msg("Save hocche...");if($("lf").files[0])data.settings.logo=await putImg($("lf").files[0],"logo",600);
+ if($("cf").files[0])data.settings.cover=await putImg($("cf").files[0],"cover",2000);await saveData("Update logo/cover");msg("Logo/cover save hoyeche")}catch(e){msg(e.message,1)}}
+async function saveSettings(){try{Object.assign(data.settings,{name:$("sn").value,tagline:$("st").value,about:$("sa").value,email:$("se").value,whatsapp:$("sw").value,facebook:$("sf").value});await saveData("Update settings");msg("Save hoyeche")}catch(e){msg(e.message,1)}}
+if(cfg)loadData().then(show).catch(()=>{});
+</script></body></html>
