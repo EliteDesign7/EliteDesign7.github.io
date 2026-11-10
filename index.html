@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="bn"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Elite Design</title><link rel="icon" href="images/favicon.png">
+<title>Elite Design</title><link rel="icon" href="favicon.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;600&display=swap" rel="stylesheet">
 <style>
 :root{--bg:#0a0344;--surface:#120a58;--text:#f2f3fb;--muted:#a9abd0;--gold:#ff4d0a}
@@ -68,5 +68,5 @@ function render(){
 $("tabs").onclick=e=>{if(e.target.dataset.c){cat=e.target.dataset.c;render()}};
 $("grid").onclick=e=>{const i=e.target.closest(".item");if(i){$("lb").querySelector("img").src=i.dataset.i;$("lb").classList.add("on")}};
 $("lb").onclick=()=>$("lb").classList.remove("on");
-fetch("data/site.json?v="+Date.now()).then(r=>r.json()).then(d=>{data=d}).catch(()=>{}).finally(render);
+fetch("site.json?v="+Date.now()).then(r=>r.json()).then(d=>{data=d}).catch(()=>{}).finally(render);
 </script></body></html>

@@ -45,9 +45,9 @@ const api=p=>`https://api.github.com/repos/${cfg.u}/${cfg.r}/contents/${p}`;
 const H=()=>({Authorization:"Bearer "+cfg.t,Accept:"application/vnd.github+json"});
 async function gh(p,method,body){const r=await fetch(api(p),{method,headers:H(),body:body&&JSON.stringify(body)});if(!r.ok&&!(method==="GET"&&r.status===404))throw new Error((await r.json()).message||r.status);return r.status===404?null:r.json()}
 const b64=s=>btoa(unescape(encodeURIComponent(s)));
-async function loadData(){const f=await gh("data/site.json","GET");if(!f){data={settings:{},designs:[]};data.sha=null;return}
+async function loadData(){const f=await gh("site.json","GET");if(!f){data={settings:{},designs:[]};data.sha=null;return}
  data=JSON.parse(decodeURIComponent(escape(atob(f.content.replace(/\n/g,"")))));data.sha=f.sha}
-async function saveData(m){const{sha,...d}=data;const r=await gh("data/site.json","PUT",{message:m,content:b64(JSON.stringify(d,null,1)),...(sha?{sha}:{})});data.sha=r.content.sha}
+async function saveData(m){const{sha,...d}=data;const r=await gh("site.json","PUT",{message:m,content:b64(JSON.stringify(d,null,1)),...(sha?{sha}:{})});data.sha=r.content.sha}
 function shrink(file,max=1600){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/i.width),c=document.createElement("canvas");c.width=i.width*k;c.height=i.height*k;c.getContext("2d").drawImage(i,0,0,c.width,c.height);res(c.toDataURL("image/jpeg",.88).split(",")[1])};i.onerror=rej;i.src=URL.createObjectURL(file)})}
 async function putImg(file,name,max){const content=await shrink(file,max);const path=`images/${name}-${Date.now()}.jpg`;await gh(path,"PUT",{message:"Add "+path,content});return path}
 async function login(){cfg={u:$("u").value.trim(),r:$("r").value.trim(),t:$("t").value.trim()};try{await loadData();localStorage.setItem("ed_cfg",JSON.stringify(cfg));show()}catch(e){msg("Login hoyni: "+e.message,1)}}
