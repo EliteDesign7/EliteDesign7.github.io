@@ -9,5 +9,26 @@
   "logo": "logo.png",
   "cover": "cover.jpg"
  },
- "designs": []
+ "designs": [
+  {
+   "id": "pmwaexh7y",
+   "images": [
+    "projects/pmwaexh7y/img-1794298383214-1.jpg"
+   ],
+   "cover": "projects/pmwaexh7y/cover-1794298386410.jpg",
+   "date": "2026-11-10",
+   "title": "Social media post design",
+   "category": "Ads",
+   "description": "I create eye-catching and engaging social media designs that strengthen brand identity, capture attention, and connect with your target audience through creative visuals.",
+   "tags": [
+    "ads",
+    "branding",
+    "social-media-post-desig",
+    "advertising",
+    "marketing",
+    "post-design",
+    "social-media"
+   ]
+  }
+ ]
 }
